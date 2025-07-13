@@ -1,0 +1,1 @@
+# Nmap 7.97 scan initiated Sun Jul 13 15:27:44 2025 as: nmap -Pn -sT -vv -oN nmap_initial_tcp_scan 192.168.1.100

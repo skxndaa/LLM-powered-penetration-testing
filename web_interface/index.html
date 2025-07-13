@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Operations Orchestrator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #a8c8ec);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+
+        .main-controls {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-card h3 {
+            margin-bottom: 15px;
+            color: #a8c8ec;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .output-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .output-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: #00ff00;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        /* --- Black & Red Société Générale Theme Overrides --- */
+        /* Adjusted to be predominantly black with subtle red accents */
+        :root {
+            --sg-red: #e60000;
+            --sg-black: #000000;
+            --sg-darkred: #b30000;
+        }
+        body {
+            background: linear-gradient(135deg, var(--sg-black) 0%, #111111 100%);
+            color: #ffffff;
+        }
+        .main-controls,
+        .status-card,
+        .output-section {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .header h1 {
+            
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #111111, #000000);
+            border: 1px solid var(--sg-red);
+            color: white;
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #444, #222);
+            color: white;
+        }
+        .btn-info {
+            background: linear-gradient(45deg, #111111, #000000);
+            border: 1px solid var(--sg-red);
+            color: white;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, var(--sg-red), #ff6666);
+        }
+            /* Header text in white with subtle red glow */
+        .header h1 {
+            background: none !important;
+            color: #ffffff !important;
+            -webkit-background-clip: initial !important;
+            -webkit-text-fill-color: #ffffff !important;
+            background-clip: initial !important;
+            text-shadow: 0 0 5px var(--sg-red);
+        }
+
+        /* Further darken cards */
+        .main-controls,
+        .status-card,
+        .output-section {
+            background: rgba(0, 0, 0, 0.8);
+        }
+        /* Attractive subtle red accents */
+        .status-card::before,
+        .main-controls::before,
+        .output-section::before {
+            content: "";
+            display: block;
+            height: 3px;
+            background: var(--sg-red);
+            border-radius: 3px 3px 0 0;
+            margin: -25px -25px 20px -25px;
+        }
+        .btn-primary:hover,
+        .btn-info:hover {
+            box-shadow: 0 0 12px var(--sg-red);
+            transform: translateY(-3px);
+        }
+        .btn-secondary:hover {
+            box-shadow: 0 0 8px #444;
+        }
+        /* radial soft red glow on background */
+        /* subtle animated gradient border for cards */
+        @keyframes gradient-border {
+            0% { border-color: rgba(255,0,0,0.3); }
+            50% { border-color: rgba(255,0,0,0.7); }
+            100% { border-color: rgba(255,0,0,0.3); }
+        }
+        .status-card,
+        .main-controls,
+        .output-section {
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            animation: gradient-border 6s linear infinite;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.6);
+        }
+        .button-group .btn {
+            letter-spacing: 0.5px;
+            transition: all 0.25s ease-in-out;
+        }
+        .button-group .btn:active {
+            transform: scale(0.97);
+        }
+        /* progress bar animation */
+        .progress-fill {
+            animation: flowing 3s linear infinite;
+        }
+        @keyframes flowing {
+            0% { background-position: 0 0; }
+            100% { background-position: 200% 0; }
+        }
+        .progress-fill {
+            background-size: 200% 100%;
+        }
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle at center, rgba(230,0,0,0.05) 0%, transparent 70%);
+        }
+</style>
+    <!-- Import modern font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-shield-alt"></i> Cybersecurity Operations Orchestrator</h1>
+            <p>AI-Powered Penetration Testing Platform</p>
+        </div>
+
+        <div class="main-controls">
+            <div class="form-group">
+                <label for="target-ip"><i class="fas fa-bullseye"></i> Target IP Address</label>
+                <input type="text" id="target-ip" placeholder="192.168.1.100" value="127.0.0.1">
+            </div>
+
+            <div class="form-group">
+                <label for="max-iterations"><i class="fas fa-repeat"></i> Maximum Iterations</label>
+                <select id="max-iterations">
+                    <option value="5">Quick Scan (5 iterations)</option>
+                    <option value="10" selected>Standard Scan (10 iterations)</option>
+                    <option value="15">Comprehensive Scan (15 iterations)</option>
+                    <option value="20">Deep Scan (20 iterations)</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="startScan()">
+                    <i class="fas fa-play"></i> Start Assessment
+                </button>
+                <button class="btn btn-secondary" onclick="stopScan()">
+                    <i class="fas fa-stop"></i> Stop Assessment
+                </button>
+                <button class="btn btn-info" onclick="generateReport()">
+                    <i class="fas fa-file-alt"></i> Generate Report
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Running security assessment...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-section">
+            <div class="status-card">
+                <h3><i class="fas fa-chart-line"></i> Assessment Status</h3>
+                <div class="status-item">
+                    <span>Current Target:</span>
+                    <span id="current-target">Not set</span>
+                </div>
+                <div class="status-item">
+                    <span>Commands Executed:</span>
+                    <span id="commands-executed">0</span>
+                </div>
+                <div class="status-item">
+                    <span>Duration:</span>
+                    <span id="duration">00:00:00</span>
+                </div>
+                <div class="status-item">
+                    <span>Status:</span>
+                    <span id="status">Ready</span>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <h3><i class="fas fa-search"></i> Discovered Services</h3>
+                <div id="discovered-services">
+                    <div class="status-item">
+                        <span>No services discovered yet</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Security Issues</h3>
+                <div id="security-issues">
+                    <div class="status-item">
+                        <span>No issues identified yet</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="output-section">
+            <h3><i class="fas fa-terminal"></i> Live Output</h3>
+            <div class="output-box" id="output">
+Welcome to Cybersecurity Operations Orchestrator
+==============================================
+
+Ready to begin security assessment.
+Enter target IP and click 'Start Assessment' to begin.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scanProcess = null;
+        let startTime = null;
+        let progressInterval = null;
+
+        function startScan() {
+            const target = document.getElementById('target-ip').value;
+            const iterations = document.getElementById('max-iterations').value;
+            
+            if (!target) {
+                alert('Please enter a target IP address');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('current-target').textContent = target;
+            document.getElementById('status').textContent = 'Running';
+            
+            // Start timer
+            startTime = new Date();
+            updateTimer();
+            
+            // Simulate progress
+            simulateProgress();
+            
+            // Update output
+            addOutput(`Starting penetration test against ${target}`);
+            addOutput(`Maximum iterations: ${iterations}`);
+            addOutput(`Assessment initiated at ${startTime.toLocaleTimeString()}`);
+            addOutput('');
+
+            // In a real implementation, this would make an API call to start the orchestrator
+            setTimeout(() => {
+                simulateAssessment();
+            }, 2000);
+        }
+
+        function stopScan() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('status').textContent = 'Stopped';
+            addOutput('Assessment stopped by user');
+            
+            if (progressInterval) {
+                clearInterval(progressInterval);
+            }
+        }
+
+        async function generateReport() {
+            addOutput('Generating comprehensive security report...');
+            
+            try {
+                const res = await fetch('/api/generate_report', { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    addOutput(`Professional report generated: ${data.file}`);
+                    // Trigger file download
+                    const link = document.createElement('a');
+                    link.href = '/api/download_report';
+                    link.download = data.file;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    addOutput('Report downloaded to your system');
+                } else if (data.error) {
+                    addOutput(`Error generating report: ${data.error}`);
+                    alert('Error generating report. Check console for details.');
+                }
+            } catch (e) {
+                console.error(e);
+                addOutput('Unexpected error while generating report');
+                alert('Unexpected error while generating report');
+            }
+        }
+
+        function addOutput(text) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `[${timestamp}] ${text}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function updateTimer() {
+            if (startTime) {
+                const now = new Date();
+                const diff = now - startTime;
+                const hours = Math.floor(diff / 3600000);
+                const minutes = Math.floor((diff % 3600000) / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                
+                document.getElementById('duration').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                setTimeout(updateTimer, 1000);
+            }
+        }
+
+        function simulateProgress() {
+            let progress = 0;
+            progressInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 100) progress = 100;
+                
+                document.getElementById('progress').style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                }
+            }, 1000);
+        }
+
+        function simulateAssessment() {
+            // Simulate discovery of services
+            setTimeout(() => {
+                addOutput('Port scan initiated...');
+                document.getElementById('commands-executed').textContent = '1';
+            }, 1000);
+            
+            setTimeout(() => {
+                addOutput('Open port discovered: 27018/tcp (MongoDB)');
+                updateDiscoveredServices('Port 27018', 'MongoDB Database');
+                document.getElementById('commands-executed').textContent = '3';
+            }, 3000);
+            
+            setTimeout(() => {
+                addOutput('Web service detected: 8080/tcp (HTTP)');
+                updateDiscoveredServices('Port 8080', 'HTTP Web Server');
+                document.getElementById('commands-executed').textContent = '5';
+            }, 5000);
+            
+            setTimeout(() => {
+                addOutput('Security issue identified: Database authentication unknown');
+                updateSecurityIssues('Database Security', 'Authentication status unclear');
+                document.getElementById('commands-executed').textContent = '8';
+            }, 7000);
+            
+            setTimeout(() => {
+                addOutput('Assessment completed successfully');
+                document.getElementById('status').textContent = 'Completed';
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('commands-executed').textContent = '10';
+            }, 10000);
+        }
+
+        function updateDiscoveredServices(service, description) {
+            const container = document.getElementById('discovered-services');
+            container.innerHTML += `
+                <div class="status-item">
+                    <span>${service}:</span>
+                    <span>${description}</span>
+                </div>
+            `;
+        }
+
+        function updateSecurityIssues(category, description) {
+            const container = document.getElementById('security-issues');
+            if (container.textContent.includes('No issues identified')) {
+                container.innerHTML = '';
+            }
+            container.innerHTML += `
+                <div class="status-item">
+                    <span>${category}:</span>
+                    <span>${description}</span>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
